@@ -135,3 +135,23 @@ papaparse
 ```
 
 No `torch`, `sentence-transformers`, `onnxruntime-node`, or Python backend is used in this Vercel version.
+
+## Fix for ONNX Runtime Web WASM mismatch
+
+If you see this error:
+
+```text
+i._OrtGetInputOutputMetadata is not a function
+```
+
+it means the ONNX Runtime Web JavaScript bundle and `.wasm` files are not from the same version. This project pins `onnxruntime-web` exactly and copies the matching `.wasm` files to `public/ort` during `postinstall`.
+
+After updating, run:
+
+```bash
+rm -rf node_modules package-lock.json .next
+npm install
+npm run dev
+```
+
+Then clear browser cache or use incognito mode.

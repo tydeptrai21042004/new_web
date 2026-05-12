@@ -330,12 +330,18 @@ export class FraudOnnxEngine {
   }
 
   static async create(files: LoadedFiles) {
-    // Use CDN-hosted WASM assets so the Vercel bundle stays small.
-    // Pin this path to the installed onnxruntime-web major/minor version.
-    ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/";
+    // IMPORTANT:
+    // ONNX Runtime Web has a JS bundle + .wasm runtime pair.
+    // They MUST come from the exact same package version, otherwise errors like
+    // "_OrtGetInputOutputMetadata is not a function" appear.
+    // The package.json pins onnxruntime-web to 1.21.0 and postinstall copies the
+    // matching .wasm files from node_modules to public/ort/.
+    ort.env.wasm.wasmPaths = "/ort/";
     ort.env.wasm.numThreads = 1;
+    ort.env.wasm.proxy = false;
 
-    const session = await ort.InferenceSession.create(files.onnxBuffer, {
+    const modelBytes = new Uint8Array(files.onnxBuffer.slice(0));
+    const session = await ort.InferenceSession.create(modelBytes, {
       executionProviders: ["wasm"],
       graphOptimizationLevel: "all"
     });

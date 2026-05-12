@@ -6,13 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "copy-ort-wasm": "node scripts/copy-ort-wasm.mjs",
+    "postinstall": "node scripts/copy-ort-wasm.mjs"
   },
   "dependencies": {
     "@types/papaparse": "^5.3.16",
     "jszip": "^3.10.1",
     "next": "^15.3.2",
-    "onnxruntime-web": "^1.21.0",
+    "onnxruntime-web": "1.21.0",
     "papaparse": "^5.5.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
