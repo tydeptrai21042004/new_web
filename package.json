@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "copy-ort-wasm": "node scripts/copy-ort-wasm.mjs",
-    "postinstall": "node scripts/copy-ort-wasm.mjs"
+    "postinstall": "node scripts/copy-ort-wasm.mjs",
+    "clean": "rm -rf node_modules package-lock.json .next public/ort",
+    "check:ort": "node scripts/copy-ort-wasm.mjs && ls -la public/ort | head -50"
   },
   "dependencies": {
     "@types/papaparse": "^5.3.16",

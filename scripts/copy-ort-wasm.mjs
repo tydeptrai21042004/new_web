@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -14,13 +14,30 @@ if (!existsSync(srcDir)) {
 
 mkdirSync(outDir, { recursive: true });
 
-const files = readdirSync(srcDir).filter((name) => name.endsWith(".wasm"));
+// ONNX Runtime Web 1.19+ dynamically imports both .mjs helper modules and .wasm binaries.
+// Copying only .wasm causes runtime errors such as:
+// Failed to fetch dynamically imported module: /ort/ort-wasm-simd-threaded.jsep.mjs
+const allowed = new Set([".wasm", ".mjs"]);
+const files = readdirSync(srcDir).filter((name) => {
+  if (!name.startsWith("ort")) return false;
+  return [...allowed].some((ext) => name.endsWith(ext));
+});
+
 if (files.length === 0) {
-  console.warn("[copy-ort-wasm] No .wasm files found in onnxruntime-web/dist.");
+  console.warn("[copy-ort-wasm] No ONNX Runtime Web .wasm/.mjs files found in onnxruntime-web/dist.");
   process.exit(0);
 }
 
+let copied = 0;
+let totalBytes = 0;
+
 for (const file of files) {
-  copyFileSync(join(srcDir, file), join(outDir, file));
+  const src = join(srcDir, file);
+  const dst = join(outDir, file);
+  copyFileSync(src, dst);
+  copied += 1;
+  totalBytes += statSync(dst).size;
   console.log(`[copy-ort-wasm] copied ${file} -> public/ort/${file}`);
 }
+
+console.log(`[copy-ort-wasm] copied ${copied} files (${(totalBytes / 1024 / 1024).toFixed(2)} MB) to public/ort`);
